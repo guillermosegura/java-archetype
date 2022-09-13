@@ -25,15 +25,10 @@ import com.google.gson.GsonBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * [%= namecamel %] GraphQLC Controller Test class
- * 
- * @author [%= username %]
- */
 @Slf4j
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class [%= namecamel %]GraphQLControllerIntegrationTest
+class [%= namecamel %]GraphQLControllerIntegrationTest
 {
   @Autowired
   private MockMvc mockMvc;
@@ -46,7 +41,50 @@ public class [%= namecamel %]GraphQLControllerIntegrationTest
         + "        territory : \"NA\""
         + "    })"
         + "    {"
-        + "        id"
+        + "        [%= namelower %]Code"
+        + "        city"
+        + "        city"
+        + "        phone"
+        + "    }"
+        + "}";
+    
+    
+    Gson gson = new GsonBuilder().create();
+    
+    var wrapper = new QueryWrapperDto();
+    wrapper.setQuery( query );
+
+    MvcResult result = mockMvc
+        .perform( MockMvcRequestBuilders.post( "/graphql" )
+          .content( gson.toJson( wrapper ) )
+          .accept( MediaType.APPLICATION_JSON )
+          .contentType( MediaType.APPLICATION_JSON ) )
+        .andExpect( status().isOk() )
+        .andExpect(request().asyncStarted())
+        .andReturn();
+    
+    this.mockMvc.perform( asyncDispatch( result ) )
+    .andDo( print() ).andExpect(status().isOk())
+    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+    .andExpect( jsonPath( "$.data" ).isNotEmpty() )
+    .andExpect( jsonPath( "$.data.[%= namelower %]s" ).isArray() )
+    .andReturn();
+
+    assertNotNull( result );
+    
+    var content = result.getResponse().getContentAsString();
+    log.info( "--->{}", content );
+  }
+  
+  @Test
+  void test[%= namecamel %]s2() throws Exception
+  {
+    String query = "query {"
+        + "    [%= namelower %]s (query : {"
+        + "        territory : \"NA\""
+        + "    } page : 0 size: 2)"
+        + "    {"
+        + "        [%= namelower %]Code"
         + "        city"
         + "        city"
         + "        phone"

@@ -31,10 +31,4 @@ public final class ValidationUtil
       throw new ValidationException( ErrorCode.EXCEEDS_MAX_LENGTH, fieldName );
     }
   }
-
-  public static void checkRequiredMaxLength( String value, String fieldName, int maxLength )
-  {
-    checkRequired( value, fieldName );
-    checkMaxLength( value, fieldName, maxLength );
-  }
 }

@@ -1,5 +1,6 @@
 package com.[%= companylower %].[%= namelower %].facade;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -138,4 +139,9 @@ class [%= namecamel %]FacadeTest
     assertNotNull( result );
   }
 
+  @Test
+  void testProcessMessage()
+  {
+    assertDoesNotThrow( () -> this.[%= namelower %]Facade.processMessage( "Lorem impsum dolor sit amet" ) );
+  }
 }

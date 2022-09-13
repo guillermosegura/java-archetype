@@ -2,8 +2,8 @@ package com.[%= companylower %].[%= namelower %].controller;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,6 +12,8 @@ import java.util.ArrayList;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,13 +51,14 @@ class [%= namecamel %]ControllerTest
 
   @MockBean
   private [%= namecamel %]Facade [%= namelower %]Facade;
-  
+
   @MockBean
   private StringRedisRepository redis;
-  
+
   @BeforeEach
-  void setUp() {
-    when(this.redis.hasKey( anyString() )).thenReturn( false );
+  void setUp()
+  {
+    when( this.redis.hasKey( anyString() ) ).thenReturn( false );
   }
 
   /**
@@ -82,27 +85,50 @@ class [%= namecamel %]ControllerTest
         .andExpect( jsonPath( "$.page" ).value( "0" ) )
         .andExpect( jsonPath( "$.size" ).value( "20" ) )
         .andExpect( jsonPath( "$.data" ).isArray() )
-        .andExpect( jsonPath( "$.data[0].id" ).value( 1 ) ).andReturn();
+        .andExpect( jsonPath( "$.data[0].id" ).value( 1 ) )
+        .andReturn();
 
     assertNotNull( result );
   }
 
   /**
    * Test method for {@link com.[%= companylower %].[%= namelower %].controller.[%= namecamel %]Controller#find[%= namecamel %](java.lang.String)}.
-   * 
-   * @throws Exception
    */
-  @Test
-  void testFind[%= namecamel %]() throws Exception
+  @ParameterizedTest()
+  @ValueSource(booleans = { true, false })
+  void testFind[%= namecamel %]( boolean exists ) throws Exception
   {
     var [%= namelower %] = this.create[%= namecamel %]( 1 );
-    var generic = new GenericResponseDto<>([%= namelower %]);
-    when( this.[%= namelower %]Facade.find( anyInt() ) ).thenReturn( generic );
-    
-    MvcResult result = mockMvc.perform( MockMvcRequestBuilders.get( "/api/[%= namelower %]s/1" ) )
-        .andExpect( status().isOk() )
-        .andExpect( jsonPath( "$.header.code" ).value( "0" ) )
-        .andExpect( jsonPath( "$.body.id" ).value( 1 ) ).andReturn();
+    var generic = new GenericResponseDto<>( [%= namelower %] );
+
+    if( exists )
+    {
+      when( this.redis.hasKey( anyString() ) ).thenReturn( true );
+      var gson = new GsonBuilder().create();
+      when( this.redis.get( anyString() ) ).thenReturn( gson.toJson( generic ) );
+    }
+    else
+    {
+      when( this.[%= namelower %]Facade.find( anyInt() ) ).thenReturn( generic );
+    }
+
+    MvcResult result = mockMvc.perform( MockMvcRequestBuilders.get( "/api/[%= namelower %]s/1" ) ).andExpect( status().isOk() )
+        .andExpect( jsonPath( "$.header.code" ).value( "0" ) ).andExpect( jsonPath( "$.body.id" ).value( 1 ) )
+        .andReturn();
+
+    assertNotNull( result );
+  }
+
+  /**
+   * Test method for {@link com.[%= companylower %].[%= namelower %].controller.[%= namecamel %]Controller#find[%= namecamel %](java.lang.String)}.
+   */
+  @Test
+  void testFind[%= namecamel %]_notExists() throws Exception
+  {
+    when( this.[%= namelower %]Facade.find( anyInt() ) ).thenReturn( null );
+
+    MvcResult result = mockMvc.perform( MockMvcRequestBuilders.get( "/api/[%= namelower %]s/99999" ) )
+        .andExpect( status().isNoContent() ).andReturn();
 
     assertNotNull( result );
   }
@@ -110,25 +136,31 @@ class [%= namecamel %]ControllerTest
   /**
    * Test method for
    * {@link com.[%= companylower %].[%= namelower %].controller.[%= namecamel %]Controller#create(com.[%= companylower %].[%= namelower %].commons.dto.[%= namecamel %]Dto)}.
-   * 
-   * @throws Exception
    */
   @Test
   void testCreate() throws Exception
   {
-    var [%= namelower %] = this.create[%= namecamel %]( 9 );
-    var generic = new GenericResponseDto<>([%= namelower %]);
-    when(this.[%= namelower %]Facade.create( any( [%= namecamel %]Dto.class ) )).thenReturn( generic );
-    
+    var [%= namelower %] = new [%= namecamel %]Dto();
+    [%= namelower %].setCity( "CDMX" );
+    [%= namelower %].setTerritory( "LATAM" );
+    [%= namelower %].setState( "CDMX" );
+    [%= namelower %].setAddressLine1( "Address" );
+    [%= namelower %].setAddressLine2( "Address" );
+    [%= namelower %].setCountry( "Mexico" );
+    [%= namelower %].setPhone( "5555555" );
+    [%= namelower %].setPostalCode( "55555" );
+
+    var generic = new GenericResponseDto<>( [%= namelower %] );
+    generic.getBody().setId( 1 );
+    when( this.[%= namelower %]Facade.create( any( [%= namecamel %]Dto.class ) ) ).thenReturn( generic );
+
     Gson gson = new GsonBuilder().create();
-    
-    MvcResult result = mockMvc.perform( MockMvcRequestBuilders.post( "/api/[%= namelower %]s"  )
-            .content(gson.toJson([%= namelower %]))
-            .accept( MediaType.APPLICATION_JSON )
-            .contentType( MediaType.APPLICATION_JSON ))
-        .andExpect( status().isCreated() )
-        .andExpect( jsonPath( "$.header.code" ).value( "0" ) )
-        .andExpect( jsonPath( "$.body.id" ).value( 9 ) ).andReturn();
+
+    MvcResult result = mockMvc
+        .perform( MockMvcRequestBuilders.post( "/api/[%= namelower %]s" ).content( gson.toJson( [%= namelower %] ) )
+            .accept( MediaType.APPLICATION_JSON ).contentType( MediaType.APPLICATION_JSON ) )
+        .andExpect( status().isCreated() ).andExpect( jsonPath( "$.header.code" ).value( "0" ) )
+        .andExpect( jsonPath( "$.body.id" ).value( 1 ) ).andReturn();
 
     assertNotNull( result );
   }
@@ -136,53 +168,59 @@ class [%= namecamel %]ControllerTest
   /**
    * Test method for
    * {@link com.[%= companylower %].[%= namelower %].controller.[%= namecamel %]Controller#update(java.lang.String, com.[%= companylower %].[%= namelower %].commons.dto.[%= namecamel %]Dto)}.
-   * 
-   * @throws Exception
    */
-  @Test
-  void testUpdate() throws Exception
+  @ParameterizedTest()
+  @ValueSource(booleans = { true, false })
+  void testUpdate( boolean exists ) throws Exception
   {
     var [%= namelower %] = this.create[%= namecamel %]( 1 );
-    var generic = new GenericResponseDto<>(true);
-    when(this.[%= namelower %]Facade.update( any( [%= namecamel %]Dto.class ) )).thenReturn( generic );
-    
+    var generic = new GenericResponseDto<>( exists );
+
+    when( this.[%= namelower %]Facade.update( any( [%= namecamel %]Dto.class ) ) ).thenReturn( generic );
+
     Gson gson = new GsonBuilder().create();
-    
-    MvcResult result = mockMvc.perform( MockMvcRequestBuilders.put( "/api/[%= namelower %]s/1"  )
-            .content(gson.toJson([%= namelower %]))
-            .accept( MediaType.APPLICATION_JSON )
-            .contentType( MediaType.APPLICATION_JSON ))
-        .andExpect( status().isOk() )
-        .andExpect( jsonPath( "$.header.code" ).value( "0" ) )
-        .andExpect( jsonPath( "$.body" ).value( "true" ) ).andReturn();
+
+    MvcResult result = mockMvc
+        .perform( MockMvcRequestBuilders.put( "/api/[%= namelower %]s/1" ).content( gson.toJson( [%= namelower %] ) )
+            .accept( MediaType.APPLICATION_JSON ).contentType( MediaType.APPLICATION_JSON ) )
+        .andExpect( status().isOk() ).andExpect( jsonPath( "$.header.code" ).value( "0" ) )
+        .andExpect( jsonPath( "$.body" ).value( exists ) ).andReturn();
 
     assertNotNull( result );
   }
 
   /**
    * Test method for {@link com.[%= companylower %].[%= namelower %].controller.[%= namecamel %]Controller#delete(java.lang.String)}.
-   * 
-   * @throws Exception
    */
-  @Test
-  void testDelete() throws Exception
+  @ParameterizedTest()
+  @ValueSource(booleans = { true, false })
+  void testDelete( boolean exists ) throws Exception
   {
-    var generic = new GenericResponseDto<>(true);
-    when(this.[%= namelower %]Facade.delete( anyInt() )).thenReturn( generic );
-    
-    MvcResult result = mockMvc.perform( MockMvcRequestBuilders.delete( "/api/[%= namelower %]s/1"  )
-            .accept( MediaType.APPLICATION_JSON ))
-        .andExpect( status().isOk() )
-        .andExpect( jsonPath( "$.header.code" ).value( "0" ) )
-        .andExpect( jsonPath( "$.body" ).value( "true" ) ).andReturn();
+    var generic = new GenericResponseDto<>( exists );
+    when( this.[%= namelower %]Facade.delete( anyInt() ) ).thenReturn( generic );
+
+    MvcResult result = mockMvc
+        .perform( MockMvcRequestBuilders.delete( "/api/[%= namelower %]s/1" ).accept( MediaType.APPLICATION_JSON ) )
+        .andExpect( status().isOk() ).andExpect( jsonPath( "$.header.code" ).value( "0" ) )
+        .andExpect( jsonPath( "$.body" ).value( exists ) ).andReturn();
 
     assertNotNull( result );
+  }
+
+  @Test
+  void testPing() throws Exception
+  {
+    MvcResult result = mockMvc.perform( MockMvcRequestBuilders.get( "/api/[%= namelower %]s/ping" ) ).andExpect( status().isOk() )
+        .andReturn();
+
+    assertNotNull( result );
+    log.info( result.getResponse().getContentAsString() );
   }
 
   private [%= namecamel %]Dto create[%= namecamel %]( int i )
   {
     var [%= namelower %] = new [%= namecamel %]Dto();
-    [%= namelower %].setId( i );
+    [%= namelower %].setId( 1 );
     return [%= namelower %];
   }
 }

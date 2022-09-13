@@ -1,5 +1,6 @@
 package com.[%= companylower %].[%= namelower %].service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -9,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +24,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.[%= companylower %].[%= namelower %].commons.dto.[%= namecamel %]Dto;
 import com.[%= companylower %].[%= namelower %].commons.enums.ErrorCode;
 import com.[%= companylower %].[%= namelower %].commons.exception.BusinessException;
+import com.[%= companylower %].[%= namelower %].commons.request.MessageDto;
 import com.[%= companylower %].[%= namelower %].commons.request.PaginatedRequestDto;
 import com.[%= companylower %].[%= namelower %].commons.request.graphql.[%= namecamel %]QueryDto;
 import com.[%= companylower %].[%= namelower %].commons.response.graphql.[%= namecamel %]GraphQLDto;
+import com.google.gson.GsonBuilder;
 
 /**
  * Class [%= namecamel %]ServiceTest
@@ -298,5 +302,41 @@ class [%= namecamel %]ServiceTest
     var list = this.[%= namelower %]Service.findGraphQL( query, null );
     assertNotNull( list );
     assertFalse( list.isEmpty() );
+  }
+
+  @ParameterizedTest()
+  @CsvSource({ "NA,0,1", "EMEA,0,1", "NA,0,0" })
+  void testFindGraphQL_pageable( String territory, int page, int size )
+  {
+    var query = new [%= namecamel %]QueryDto();
+    query.setQuery( new [%= namecamel %]GraphQLDto() );
+    query.getQuery().setTerritory( territory );
+    query.setPage( page );
+    query.setSize( size );
+    var list = this.[%= namelower %]Service.findGraphQL( query, null );
+    assertNotNull( list );
+    assertFalse( list.isEmpty() );
+  }
+
+  @Test
+  void testProcessMessage()
+  {
+
+    var dto = new [%= namecamel %]Dto();
+    dto.setCountry( "México" );
+    dto.setTerritory( "LATAM" );
+    dto.setCity( "CDMX" );
+    dto.setAddressLine1( "Adress 1" );
+    dto.setAddressLine2( "Adress 2" );
+    dto.setState( "CDMX" );
+    dto.setPhone( "+52 55 5555 5555" );
+    dto.setPostalCode( "11200" );
+
+    var gson = new GsonBuilder().create();
+    var message = new MessageDto();
+    message.setMessage( "Lorem ipsum dolor sit amet" );
+    message.setJson( gson.toJson( dto ) );
+
+    assertDoesNotThrow( () -> this.[%= namelower %]Service.processMessage( gson.toJson( message ) ) );
   }
 }

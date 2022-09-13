@@ -1,5 +1,8 @@
 package com.[%= companylower %].[%= namelower %];
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author [%= username %]
  */
 @SpringBootApplication
-public class ApplicationTest
+class ApplicationTest
 {
 
   public static void main( String[] args )
@@ -17,4 +20,8 @@ public class ApplicationTest
     SpringApplication.run( ApplicationTest.class, args );
   }
 
+  @Test
+  void test() {
+    assertTrue( true );
+  }
 }
