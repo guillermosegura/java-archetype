@@ -41,9 +41,9 @@ class [%= namecamel %]GraphQLControllerIntegrationTest
         + "        territory : \"NA\""
         + "    })"
         + "    {"
-        + "        [%= namelower %]Code"
+        + "        id"
         + "        city"
-        + "        city"
+        + "        country"
         + "        phone"
         + "    }"
         + "}";
@@ -84,9 +84,9 @@ class [%= namecamel %]GraphQLControllerIntegrationTest
         + "        territory : \"NA\""
         + "    } page : 0 size: 2)"
         + "    {"
-        + "        [%= namelower %]Code"
+        + "        id"
         + "        city"
-        + "        city"
+        + "        country"
         + "        phone"
         + "    }"
         + "}";
